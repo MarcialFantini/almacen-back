@@ -15,3 +15,4 @@ app
     // gracefully handle error
     throw new Error(error.message);
   });
+console.log("hola");
