@@ -1,18 +1,21 @@
-import express, { Request, Response } from "express";
+import express from "express";
 import dotenv from "dotenv";
+import { connect } from "./DB/connection";
+import bodyParser from "body-parser";
+import { appRouter } from "./routers/appRouter";
 
-// configures dotenv to work in your application
+connect();
+
 dotenv.config();
+
 const app = express();
 
-const PORT = process.env.PORT || 3000;
+app.use(bodyParser.json());
 
-app
-  .listen(PORT, () => {
-    console.log("Server running at PORT: ", PORT);
-  })
-  .on("error", (error) => {
-    // gracefully handle error
-    throw new Error(error.message);
-  });
-console.log("hola");
+const PORT = process.env.PORT || 5000;
+
+appRouter(app);
+
+app.listen(PORT, () => {
+  console.log("Server running at PORT: ", PORT);
+});
