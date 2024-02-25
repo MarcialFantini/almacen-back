@@ -1,14 +1,14 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../connection";
-import { User } from "./Users";
-import { Product } from "./Products";
 
-interface OrdersInterface {
+export interface OrdersInterface {
   id: string;
   product_id: string;
 
   user_id: string;
   amount: number;
+
+  isDeleted: boolean;
 }
 
 export const Orders = sequelize.define<Model<OrdersInterface>>("Orders", {
@@ -19,15 +19,20 @@ export const Orders = sequelize.define<Model<OrdersInterface>>("Orders", {
     allowNull: false,
   },
   product_id: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   user_id: {
-    type: DataTypes.STRING,
+    type: DataTypes.UUID,
     allowNull: false,
   },
   amount: {
     type: DataTypes.INTEGER,
     allowNull: false,
+  },
+  isDeleted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 });

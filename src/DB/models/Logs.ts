@@ -5,6 +5,7 @@ interface LogsInterface {
   id: string;
   user_id: string;
   action: string;
+  isDelted: boolean;
 }
 
 export const Logs = sequelize.define<Model<LogsInterface>>("Logs", {
@@ -21,5 +22,10 @@ export const Logs = sequelize.define<Model<LogsInterface>>("Logs", {
   action: {
     type: DataTypes.STRING,
     allowNull: false,
+  },
+  isDelted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
   },
 });
