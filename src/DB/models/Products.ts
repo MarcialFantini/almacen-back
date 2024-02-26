@@ -8,6 +8,7 @@ export interface ProductInterface {
   amount: number;
   price: number;
   isDeleted: boolean;
+  isCompleted: boolean;
 }
 
 export const Product = sequelize.define<Model<ProductInterface>>("Product", {
@@ -30,6 +31,11 @@ export const Product = sequelize.define<Model<ProductInterface>>("Product", {
     allowNull: false,
   },
   isDeleted: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    allowNull: false,
+  },
+  isCompleted: {
     type: DataTypes.BOOLEAN,
     defaultValue: false,
     allowNull: false,

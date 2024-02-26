@@ -9,6 +9,7 @@ export interface OrdersInterface {
   amount: number;
 
   isDeleted: boolean;
+  isCompleted: boolean;
 }
 
 export const Orders = sequelize.define<Model<OrdersInterface>>("Orders", {
@@ -31,6 +32,11 @@ export const Orders = sequelize.define<Model<OrdersInterface>>("Orders", {
     allowNull: false,
   },
   isDeleted: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
+  isCompleted: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
     defaultValue: false,
