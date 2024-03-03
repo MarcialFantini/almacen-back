@@ -13,8 +13,11 @@ export const usersCreateController = async (
     const userResponse = await UsersService.createUser(body);
 
     res.status(userResponse.code).json(userResponse);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (error: any) {
+    res.status(500).json({
+      message: error || error.message,
+      code: 500,
+    });
   }
 };
 
@@ -30,8 +33,11 @@ export const usersFindPageController = async (
     const responsePageUsers = await UsersService.getPageUsers(page, offset);
 
     res.json(responsePageUsers);
-  } catch (error) {
-    res.status(500).json(error);
+  } catch (error: any) {
+    res.status(500).json({
+      message: error || error.message,
+      code: 500,
+    });
   }
 };
 
@@ -57,9 +63,9 @@ export const updateUserController = async (
   next: NextFunction
 ) => {
   try {
-    const id = Number(req.params.id);
+    const id = req.params.id;
     const user = req.body as UserInterface;
-
+    console.log(id, user);
     const usersUpdate = await UsersService.updateUser(id, user);
 
     res.status(usersUpdate.code).json(usersUpdate);

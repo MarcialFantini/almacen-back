@@ -6,13 +6,18 @@ import {
   usersCreateController,
   usersFindPageController,
 } from "../controllers/UsersController";
+import { autAdmin, autUser } from "../middleware/aut";
 
 const usersRouter = Router();
 
 usersRouter.post("/create", usersCreateController);
-usersRouter.get("/page/:page/offset/:offset", usersFindPageController);
-usersRouter.get("/one/:id", userFindOneController);
-usersRouter.patch("/update/:id", updateUserController);
-usersRouter.delete("/delete/:id", deletedUserController);
+usersRouter.get(
+  "/page/:page/offset/:offset",
+  autAdmin,
+  usersFindPageController
+);
+usersRouter.get("/one/:id", autUser, userFindOneController);
+usersRouter.patch("/update/:id", autUser, updateUserController);
+usersRouter.delete("/delete/:id", autUser, deletedUserController);
 
 export { usersRouter };

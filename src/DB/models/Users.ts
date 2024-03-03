@@ -6,6 +6,7 @@ export interface UserInterface {
   id: string;
   name: string;
   lastName: string;
+  password: string;
   email: string;
   isDeleted: boolean;
   role: string;
@@ -29,6 +30,11 @@ export const User = sequelize.define<Model<UserInterface>>("User", {
   email: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
+  },
+  password: {
+    type: DataTypes.STRING,
+    allowNull: false,
   },
   isDeleted: {
     type: DataTypes.BOOLEAN,
@@ -38,7 +44,7 @@ export const User = sequelize.define<Model<UserInterface>>("User", {
   role: {
     type: DataTypes.STRING,
     allowNull: false,
-    defaultValue: "normal",
+    defaultValue: "user",
   },
 });
 

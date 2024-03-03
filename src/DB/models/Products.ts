@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import { sequelize } from "../connection";
 import { Orders } from "./Orders";
+import { ProductImages } from "./ProductImages";
 
 export interface ProductInterface {
   id: string;
@@ -21,6 +22,7 @@ export const Product = sequelize.define<Model<ProductInterface>>("Product", {
   name: {
     type: DataTypes.STRING,
     allowNull: false,
+    unique: true,
   },
   amount: {
     type: DataTypes.INTEGER,
@@ -43,3 +45,6 @@ export const Product = sequelize.define<Model<ProductInterface>>("Product", {
 });
 Product.hasMany(Orders, { foreignKey: "product_id" });
 Orders.belongsTo(Product, { foreignKey: "product_id" });
+
+Product.hasMany(ProductImages, { foreignKey: "product_id" });
+ProductImages.belongsTo(Product, { foreignKey: "product_id" });

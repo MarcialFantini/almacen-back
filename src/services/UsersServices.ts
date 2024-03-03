@@ -1,7 +1,12 @@
+import { hashSync } from "bcryptjs";
 import { User, UserInterface } from "../DB/models/Users";
 
 export class UsersService {
   static async createUser(UserBody: UserInterface) {
+    const hash = hashSync(UserBody.password, 10);
+
+    UserBody.password = hash;
+    console.log(UserBody);
     const newUser = await User.create(UserBody);
 
     if (!newUser) {
@@ -60,7 +65,7 @@ export class UsersService {
     };
   }
 
-  static async updateUser(id: number, userBody: UserInterface) {
+  static async updateUser(id: string, userBody: UserInterface) {
     const updateUser = await User.update(userBody, { where: { id } });
 
     if (updateUser[0] === 0) {

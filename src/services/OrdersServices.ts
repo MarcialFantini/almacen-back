@@ -70,7 +70,12 @@ export class OrdersService {
   }
 
   static async getOneOrder(id: string) {
-    const order = await Orders.findByPk(id);
+    const order = await Orders.findByPk(id, {
+      include: [
+        { model: Product, attributes: ["name", "price"] },
+        { model: User, attributes: ["name", "email"] },
+      ],
+    });
 
     if (!order) {
       return {
@@ -163,19 +168,55 @@ export class OrdersService {
   }
 
   static async deleteOrder(id: string) {
-    const ordersUpdate = await Orders.update(
-      { isDeleted: true },
-      { where: { id } }
-    );
+    const t = await sequelize.transaction();
+    try {
+      const order = await Orders.findByPk(id, {
+        attributes: ["amount", "product_id"],
+      });
 
-    if (ordersUpdate[0] <= 0) {
+      if (!order) {
+        throw new Error("error to found oder");
+      }
+
+      if (!order.dataValues.isCompleted) {
+        const product = await Product.findByPk(order.dataValues.product_id, {
+          attributes: ["amount"],
+        });
+
+        if (!product) {
+          throw new Error("error to found product");
+        }
+
+        await Product.update(
+          { amount: product.dataValues.amount + order.dataValues.amount },
+          {
+            where: { id: order.dataValues.amount + product.dataValues.amount },
+            transaction: t,
+          }
+        );
+      }
+
+      const ordersUpdate = await Orders.update(
+        { isDeleted: true },
+        { where: { id }, transaction: t }
+      );
+
+      if (ordersUpdate[0] <= 0) {
+        return {
+          data: {},
+          message: "order deleted",
+          code: 400,
+        };
+      }
+
+      return { data: ordersUpdate, message: "order deleted", code: 200 };
+    } catch (error: any) {
+      await t.rollback();
+
       return {
-        data: {},
-        message: "order deleted",
-        code: 400,
+        data: error.message || error,
+        code: 500,
       };
     }
-
-    return { data: ordersUpdate, message: "order deleted", code: 200 };
   }
 }
