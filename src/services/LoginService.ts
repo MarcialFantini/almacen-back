@@ -11,7 +11,7 @@ export class LoginService {
   static async loginUser(emailUser: string, password: string) {
     const user = await User.findOne({
       where: { email: emailUser },
-      attributes: ["id", "email", "password"],
+      attributes: ["id", "email", "password", "role"],
     });
 
     if (!user) {
@@ -33,7 +33,7 @@ export class LoginService {
     });
 
     return {
-      data: { token },
+      data: { token, isAdmin: user.dataValues.role === "admin" },
       code: 200,
     };
   }

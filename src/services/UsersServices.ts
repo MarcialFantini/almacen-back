@@ -1,8 +1,10 @@
 import { hashSync } from "bcryptjs";
 import { User, UserInterface } from "../DB/models/Users";
+import { LoginService } from "./LoginService";
 
 export class UsersService {
   static async createUser(UserBody: UserInterface) {
+    const newPass = UserBody.password;
     const hash = hashSync(UserBody.password, 10);
 
     UserBody.password = hash;
@@ -16,8 +18,11 @@ export class UsersService {
         code: 500,
       };
     }
+
+    const tokenResponse = await LoginService.loginUser(UserBody.email, newPass);
+
     return {
-      data: true,
+      data: tokenResponse.data,
       message: "created",
       code: 201,
     };

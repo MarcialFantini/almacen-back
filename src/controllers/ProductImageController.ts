@@ -10,7 +10,7 @@ export const createProductImageController = async (
   try {
     const { id } = req.params;
     const destination = req.file?.path;
-    console.log(req.file);
+
     if (!destination || !id) {
       return res.status(400).json({
         code: 400,

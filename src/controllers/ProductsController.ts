@@ -1,6 +1,36 @@
 import { NextFunction, Request, Response } from "express";
 import { ProductInterface } from "../DB/models/Products";
 import { ProductService } from "../services/ProductsServices";
+import multer from "multer";
+
+export const ProductCreateWithImageController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const product = req.body as ProductInterface;
+    if (!product) {
+      res.status(400).json({ message: "error to send product in body" });
+    }
+    let pathFiles: string[] = [];
+
+    if (req.files) {
+      for (const file of req.files as Express.Multer.File[]) {
+        pathFiles.push(file.path);
+      }
+    }
+
+    const responseProduct = await ProductService.createProductWithImages(
+      product,
+      pathFiles
+    );
+
+    res.status(responseProduct.code).json(responseProduct);
+  } catch (error) {
+    res.status(500).json({ message: "error to created product" });
+  }
+};
 
 export const ProductCreateController = async (
   req: Request,

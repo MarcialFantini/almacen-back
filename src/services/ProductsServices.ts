@@ -1,10 +1,35 @@
+import { ProductImages } from "../DB/models/ProductImages";
 import { Product, ProductInterface } from "../DB/models/Products";
 
 export class ProductService {
-  static async createProduct(product: ProductInterface) {
-    const productCreted = await Product.create(product);
+  static async createProductWithImages(
+    product: ProductInterface,
+    files: string[]
+  ) {
+    const productCreated = await Product.create(product, { returning: true });
 
-    if (!productCreted) {
+    if (!productCreated) {
+      return { data: {}, message: "not created", code: 500 };
+    }
+
+    const idProductCreated = productCreated.dataValues.id;
+
+    const promises = files.map((file) => {
+      return ProductImages.create({
+        product_id: idProductCreated,
+        src_image: file,
+      });
+    });
+
+    const allCreated = await Promise.allSettled(promises);
+
+    return { data: {}, message: "product and images created", code: 201 };
+  }
+
+  static async createProduct(product: ProductInterface) {
+    const productCreated = await Product.create(product);
+
+    if (!productCreated) {
       return {
         data: {},
         message: "not created",
@@ -13,7 +38,7 @@ export class ProductService {
     }
 
     return {
-      data: productCreted,
+      data: productCreated,
       code: 201,
       message: "created",
     };
@@ -21,7 +46,9 @@ export class ProductService {
 
   static async getProductById(id: string) {
     try {
-      const product = await Product.findByPk(id);
+      const product = await Product.findByPk(id, {
+        include: { model: ProductImages, attributes: ["id"] },
+      });
 
       if (!product) {
         return {
@@ -49,6 +76,8 @@ export class ProductService {
     const listOfProducts = await Product.findAll({
       limit: offset,
       offset: offset * page,
+      attributes: ["id", "name", "amount", "price"],
+      include: { model: ProductImages, attributes: ["id"] },
     });
     if (listOfProducts.length === 0) {
       return {
