@@ -10,8 +10,8 @@ const productImageRouter = Router();
 
 productImageRouter.post(
   "/create/:id",
-  autAdmin,
   upload.single("image"),
+  autAdmin,
 
   createProductImageController
 );

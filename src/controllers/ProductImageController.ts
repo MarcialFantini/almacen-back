@@ -11,10 +11,12 @@ export const createProductImageController = async (
     const { id } = req.params;
     const destination = req.file?.path;
 
+    console.log(req.file);
+
     if (!destination || !id) {
       return res.status(400).json({
         code: 400,
-        message: "bad request",
+        message: "bad request with file",
       });
     }
 

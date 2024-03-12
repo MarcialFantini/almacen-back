@@ -53,6 +53,8 @@ export const autAdmin = async (
   try {
     const headerToken = req.headers.authorization;
 
+    console.log(req.body);
+
     if (!headerToken) {
       return res
         .status(400)

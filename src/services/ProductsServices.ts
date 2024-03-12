@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import { ProductImages } from "../DB/models/ProductImages";
 import { Product, ProductInterface } from "../DB/models/Products";
 
@@ -44,6 +45,32 @@ export class ProductService {
     };
   }
 
+  static async getSearchProduct(search: string) {
+    const product = await Product.findAll({
+      where: {
+        name: {
+          [Op.like]: `%${search}%`,
+        },
+      },
+      include: [{ model: ProductImages, attributes: ["id"] }],
+      limit: 20,
+    });
+
+    if (product.length === 0) {
+      return {
+        data: {},
+        code: 404,
+        message: "Product not found",
+      };
+    }
+
+    return {
+      data: product,
+      code: 200,
+      message: "products found",
+    };
+  }
+
   static async getProductById(id: string) {
     try {
       const product = await Product.findByPk(id, {
@@ -72,12 +99,26 @@ export class ProductService {
     }
   }
 
-  static async getproductPage(page: number, offset: number) {
+  static async getproductPage(page: number, offset: number, category?: string) {
+    const filter: { isDeleted: boolean; category?: string } = {
+      isDeleted: false,
+    };
+
+    if (category) {
+      filter.category = category;
+    }
+
     const listOfProducts = await Product.findAll({
       limit: offset,
       offset: offset * page,
-      attributes: ["id", "name", "amount", "price"],
-      include: { model: ProductImages, attributes: ["id"] },
+      attributes: ["id", "name", "amount", "price", "category"],
+      include: {
+        model: ProductImages,
+        attributes: ["id"],
+      },
+      where: {
+        ...filter,
+      },
     });
     if (listOfProducts.length === 0) {
       return {
