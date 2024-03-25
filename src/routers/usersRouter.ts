@@ -16,8 +16,8 @@ usersRouter.get(
   autAdmin,
   usersFindPageController
 );
-usersRouter.get("/one/:id", autUser, userFindOneController);
-usersRouter.patch("/update/:id", autUser, updateUserController);
-usersRouter.delete("/delete/:id", autUser, deletedUserController);
+usersRouter.get("/one/:id", autAdmin, userFindOneController);
+usersRouter.patch("/update/:id", autAdmin, updateUserController);
+usersRouter.delete("/delete/:id", autAdmin, deletedUserController);
 
 export { usersRouter };

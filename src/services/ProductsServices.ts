@@ -118,6 +118,9 @@ export class ProductService {
       },
       where: {
         ...filter,
+        amount: {
+          [Op.gt]: 0,
+        },
       },
     });
     if (listOfProducts.length === 0) {

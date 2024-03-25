@@ -3,59 +3,104 @@ import { sequelize } from "../DB/connection";
 import { Orders, OrdersInterface } from "../DB/models/Orders";
 import { Product, ProductInterface } from "../DB/models/Products";
 import { User } from "../DB/models/Users";
+import Stripe from "stripe";
+import { config } from "dotenv";
+config();
+export interface CreateOrderInterface {
+  amount: number;
+  product_id: string;
+  price: number;
+}
+
+const stripe = new Stripe(process.env.stripe || "");
 
 export class OrdersService {
-  static async createOrder(order: OrdersInterface) {
+  static async createOrder(order: CreateOrderInterface[], idUser: string) {
     const t = await sequelize.transaction();
 
     try {
-      const productSelected = await Product.findOne({
-        where: { id: order.product_id },
-        attributes: ["amount"],
-        transaction: t, // Pass the transaction to all queries
+      console.log(order);
+      order.forEach(async (order) => {
+        const productSelected = await Product.findOne({
+          where: { id: order.product_id },
+          attributes: ["amount"],
+          transaction: t, // Pass the transaction to all queries
+        });
+        const userSelected = await User.findOne({
+          where: { id: idUser },
+          attributes: ["id"],
+          transaction: t, // Pass the transaction to all queries
+        });
+
+        if (!productSelected || !userSelected) {
+          return {
+            data: {},
+            message: "product or user not found",
+            code: 404,
+          };
+        }
+
+        const amountLessProduct =
+          productSelected.dataValues.amount - order.amount;
+
+        if (amountLessProduct < 0) {
+          await t.rollback();
+          return {
+            data: {},
+            message: "not amount required",
+            code: 400,
+          };
+        }
+
+        await Product.update(
+          { amount: amountLessProduct },
+          { where: { id: order.product_id }, transaction: t }
+        );
+
+        const newOrder = await Orders.create(
+          {
+            amount: order.amount,
+            product_id: order.product_id,
+            user_id: idUser,
+          },
+          { transaction: t }
+        );
+
+        if (!newOrder) {
+          await t.rollback();
+          throw new Error("Error to create order");
+        }
       });
-      const userSelected = await User.findOne({
-        where: { id: order.user_id },
-        attributes: ["id"],
-        transaction: t, // Pass the transaction to all queries
+
+      // const lineProducts = order.map((item) => {
+      //   return {
+      //     price_data: {
+      //       currency: "usd",
+      //       product_data: {
+      //         name: item.name,
+      //       },
+      //       unit_amount: Math.round(item.price * 100),
+      //     },
+      //     quantity: item.amount,
+      //   };
+      // });
+
+      let totalPrice = 0;
+
+      order.forEach((order) => (totalPrice = totalPrice + order.price));
+
+      const session = await stripe.paymentIntents.create({
+        amount: totalPrice * 100,
+        currency: "eur",
+        automatic_payment_methods: {
+          enabled: true,
+        },
       });
-
-      if (!productSelected || !userSelected) {
-        return {
-          data: {},
-          message: "product or user not found",
-          code: 404,
-        };
-      }
-
-      const amountLessProduct =
-        productSelected.dataValues.amount - order.amount;
-
-      if (amountLessProduct < 0) {
-        await t.rollback();
-        return {
-          data: {},
-          message: "not amount required",
-          code: 400,
-        };
-      }
-
-      await Product.update(
-        { amount: amountLessProduct },
-        { where: { id: order.product_id }, transaction: t }
-      );
-
-      const newOrder = await Orders.create(order, { transaction: t });
-
-      if (!newOrder) {
-        await t.rollback();
-        throw new Error("Error to create order");
-      }
 
       await t.commit();
 
       return {
-        data: newOrder,
+        data: { clientSecret: session.client_secret },
         message: "order created",
         code: 200,
       };
@@ -100,6 +145,9 @@ export class OrdersService {
         { model: User, attributes: ["name", "email"] },
         { model: Product, attributes: ["name", "price"] },
       ],
+      where: {
+        isDeleted: false,
+      },
     });
 
     if (pageOrder.length <= 0) {
@@ -114,6 +162,16 @@ export class OrdersService {
       message: "orders found",
       data: pageOrder,
     };
+  }
+
+  static async getInfoGraphOrders() {
+    const orders = await Orders.findAll({
+      limit: 20,
+      attributes: ["id", "amount", "createdAt"],
+      order: [["createdAt", "DESC"]],
+    });
+
+    return orders;
   }
 
   static async updateOrder(id: string, updateOrder: OrdersInterface) {
@@ -169,6 +227,7 @@ export class OrdersService {
 
   static async deleteOrder(id: string) {
     const t = await sequelize.transaction();
+    console.log("id order:  ", id);
     try {
       const order = await Orders.findByPk(id, {
         attributes: ["amount", "product_id"],
@@ -180,17 +239,17 @@ export class OrdersService {
 
       if (!order.dataValues.isCompleted) {
         const product = await Product.findByPk(order.dataValues.product_id, {
-          attributes: ["amount"],
+          attributes: ["id", "amount"],
         });
 
         if (!product) {
           throw new Error("error to found product");
         }
 
-        await Product.update(
+        const data = await Product.update(
           { amount: product.dataValues.amount + order.dataValues.amount },
           {
-            where: { id: order.dataValues.amount + product.dataValues.amount },
+            where: { id: product.dataValues.id },
             transaction: t,
           }
         );
@@ -202,12 +261,9 @@ export class OrdersService {
       );
 
       if (ordersUpdate[0] <= 0) {
-        return {
-          data: {},
-          message: "order deleted",
-          code: 400,
-        };
+        throw new Error("error to delete order");
       }
+      await t.commit();
 
       return { data: ordersUpdate, message: "order deleted", code: 200 };
     } catch (error: any) {

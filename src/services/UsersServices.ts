@@ -40,7 +40,7 @@ export class UsersService {
     if (users.length === 0) {
       return {
         data: [],
-        message: "not finded",
+        message: "not found",
         code: 404,
       };
     }

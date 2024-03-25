@@ -20,7 +20,7 @@ export const autUser = async (
         .status(400)
         .json({ message: "error not send token", code: 400 });
     }
-
+    console.log("token :", headerToken);
     const token = headerToken.split(" ")[1];
 
     const decode = verify(token, secret);
@@ -28,6 +28,7 @@ export const autUser = async (
     if (typeof decode !== "string") {
       return res.status(400).json({ message: "bad request", code: 400 });
     }
+    console.log("\n container decode aut: ", decode);
 
     const user = await User.findByPk(decode, { attributes: ["role"] });
 
@@ -53,8 +54,6 @@ export const autAdmin = async (
   try {
     const headerToken = req.headers.authorization;
 
-    console.log(req.body);
-
     if (!headerToken) {
       return res
         .status(400)
@@ -64,9 +63,7 @@ export const autAdmin = async (
     const token = headerToken.split(" ")[1];
 
     const decode = verify(token, secret) as { id: string };
-
     const user = await User.findByPk(decode.id, { attributes: ["role"] });
-
     if (!user) {
       return res.status(403).json({ message: "user not found", code: 403 });
     }
@@ -77,6 +74,7 @@ export const autAdmin = async (
 
     next();
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ code: 500, message: error });
   }
 };

@@ -80,8 +80,9 @@ export const deletedUserController = async (
   next: NextFunction
 ) => {
   try {
-    const id = req.params.id;
+    console.log("id of user to delete");
 
+    const id = req.params.id;
     const responseUserDeleted = await UsersService.deletedUser(id);
 
     res.status(responseUserDeleted.code).json(responseUserDeleted);

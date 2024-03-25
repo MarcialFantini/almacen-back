@@ -12,7 +12,7 @@ export const Logs = sequelize.define<Model<LogsInterface>>("Logs", {
   id: {
     primaryKey: true,
     allowNull: false,
-    type: DataTypes.UUIDV4,
+    type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
   },
   user_id: {
