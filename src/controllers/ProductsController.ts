@@ -151,3 +151,21 @@ export const ProductDeleteController = async (
     });
   }
 };
+
+export const GetCountCategoryProductsController = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const response = await ProductService.getCountCategoryProducts();
+
+    if (response.length === 0) {
+      return res.status(404).json({ data: response, code: 404 });
+    }
+
+    return res.status(200).json({ data: response, code: 200 });
+  } catch (error) {
+    return res.status(500).json({ data: error, code: 500 });
+  }
+};

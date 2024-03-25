@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { fn, Op, Sequelize } from "sequelize";
 import { ProductImages } from "../DB/models/ProductImages";
 import { Product, ProductInterface } from "../DB/models/Products";
 
@@ -199,5 +199,17 @@ export class ProductService {
         code: 500,
       };
     }
+  }
+
+  static async getCountCategoryProducts() {
+    const amountProductsByCategory = await Product.findAll({
+      attributes: [
+        "category",
+        [Sequelize.fn("COUNT", Sequelize.literal("*")), "cantidad"], // Contar la cantidad de productos
+      ],
+      group: ["category"],
+    });
+
+    return amountProductsByCategory;
   }
 }

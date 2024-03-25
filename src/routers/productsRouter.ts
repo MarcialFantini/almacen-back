@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  GetCountCategoryProductsController,
   ProductCreateController,
   ProductCreateWithImageController,
   ProductDeleteController,
@@ -26,6 +27,10 @@ productRouter.get(
   ProductGetPageController
 );
 productRouter.get("/search/:search", ProductGetSearch);
+productRouter.get(
+  "/dashboard/category/count",
+  GetCountCategoryProductsController
+);
 productRouter.patch("/update/:id", autAdmin, ProductUpdateController);
 productRouter.delete("/delete/:id", autAdmin, ProductDeleteController);
 

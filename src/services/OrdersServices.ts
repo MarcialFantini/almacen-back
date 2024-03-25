@@ -13,13 +13,11 @@ export interface CreateOrderInterface {
 }
 
 const stripe = new Stripe(process.env.stripe || "");
-
 export class OrdersService {
   static async createOrder(order: CreateOrderInterface[], idUser: string) {
     const t = await sequelize.transaction();
 
     try {
-      console.log(order);
       order.forEach(async (order) => {
         const productSelected = await Product.findOne({
           where: { id: order.product_id },
@@ -65,7 +63,7 @@ export class OrdersService {
           },
           { transaction: t }
         );
-
+        console.log(newOrder);
         if (!newOrder) {
           await t.rollback();
           throw new Error("Error to create order");
@@ -105,6 +103,7 @@ export class OrdersService {
         code: 200,
       };
     } catch (error) {
+      console.log(error);
       await t.rollback();
 
       return {
