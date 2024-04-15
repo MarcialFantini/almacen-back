@@ -19,19 +19,6 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // límite de tamaño de archivo (10MB)
   },
-  fileFilter: function (req, file, cb) {
-    // Filtro para permitir solo ciertos tipos de archivo
-    const allowedTypes = ["image/jpeg", "image/png"];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(
-        new Error(
-          "Tipo de archivo no válido. Solo se permiten archivos JPEG y PNG."
-        )
-      );
-    }
-  },
 });
 
 export { upload };
